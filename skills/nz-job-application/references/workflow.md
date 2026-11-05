@@ -31,6 +31,13 @@ Compare the advert with `WS/profile/eligibility.md`. Result: PASS / UNCLEAR / FA
 - "Ideally" or "preferred" is a preference, not a gate.
 - Do not assume a postgraduate student meets a rule written for undergraduates
   (for example "penultimate year of a Bachelor's"). That is UNCLEAR.
+- **Hours vs visa conditions are UNCLEAR, not FAIL.** If the role is full-time
+  but the user's visa limits hours during study, the employer may still accept
+  full-time in holidays and fewer hours during term. Mark UNCLEAR and draft the
+  question to the recruiter. Use FAIL only when the advert itself rules the
+  user out (for example "must be an NZ citizen or resident", "no visa
+  sponsorship" for someone who needs it, or a start or end date the user's visa
+  cannot cover).
 
 Then:
 - **PASS:** continue to Step 3. No checkpoint.

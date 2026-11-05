@@ -149,6 +149,70 @@ def test_build_release(tmp_path):
     assert not any("__pycache__" in n for n in names)
     with zipfile.ZipFile(repo / "dist" / "chatgpt-project-files.zip") as zf:
         names = zf.namelist()
-    assert "chatgpt-project-files/PROJECT_INSTRUCTIONS.md" in names
+    assert "chatgpt-project-files/PROJECT_INSTRUCTIONS.txt" in names
     assert "chatgpt-project-files/project-files/profile_templates.md" in names
     assert "chatgpt-project-files/project-files/workflow.md" in names
+
+
+def _zip(path, files):
+    import zipfile
+    with zipfile.ZipFile(path, "w") as zf:
+        for name, data in files.items():
+            zf.writestr(name, data)
+    return path
+
+
+def test_load_upload_accepts_anything(tmp_path):
+    import io
+    import zipfile
+    inner = io.BytesIO()
+    with zipfile.ZipFile(inner, "w") as zf:
+        zf.writestr("certificate.txt", "Certificate in Excel")
+    bundle = _zip(tmp_path / "my stuff.zip", {
+        "Documents/CV final.docx": b"fake docx",
+        "Documents/old letters/letter1.txt": "Dear hiring manager",
+        "__MACOSX/._junk": "junk",
+        "../evil.txt": "should be skipped",
+        "certs.zip": inner.getvalue(),
+    })
+    loose = tmp_path / "transcript.pdf"
+    loose.write_bytes(b"%PDF fake")
+    ws = tmp_path / "my-job-search"
+    result = run_script("load_upload.py", bundle, loose, "--workspace", ws)
+    assert result.returncode == 0, result.stderr
+    assert "(NEW)" in result.stdout
+    inbox = ws / "inbox"
+    assert (inbox / "my stuff" / "Documents" / "CV final.docx").exists()
+    assert (inbox / "my stuff" / "Documents" / "old letters" / "letter1.txt").exists()
+    assert (inbox / "my stuff" / "certs" / "certificate.txt").exists()
+    assert (inbox / "transcript.pdf").exists()
+    assert not any("MACOSX" in str(p) or "evil" in str(p) for p in inbox.rglob("*"))
+    assert (ws / "config.yaml").exists() and (ws / "profile" / "cv_master.md").exists()
+
+
+def test_load_upload_restores_saved_workspace(workspace, tmp_path):
+    saved = tmp_path / "anything I like.zip"
+    packed = run_script("workspace_zip.py", "pack", "--workspace", workspace, "--out", saved)
+    assert packed.returncode == 0, packed.stderr
+    fresh = tmp_path / "fresh" / "my-job-search"
+    result = run_script("load_upload.py", saved, "--workspace", fresh)
+    assert result.returncode == 0, result.stderr
+    assert "RESTORED" in result.stdout
+    assert "Alex Chen" in (fresh / "config.yaml").read_text(encoding="utf-8")
+    assert (fresh / "profile" / "projects" / "sales-forecasting.md").exists()
+
+
+def test_load_upload_never_overwrites_existing_profile(workspace, tmp_path):
+    other = _zip(tmp_path / "other.zip", {"my-job-search/config.yaml":
+                                         'candidate:\n  full_name: "Someone Else"\n'})
+    result = run_script("load_upload.py", other, "--workspace", workspace)
+    assert result.returncode == 0, result.stderr
+    assert "Alex Chen" in (workspace / "config.yaml").read_text(encoding="utf-8")
+    assert (workspace / "inbox" / "other" / "my-job-search" / "config.yaml").exists()
+
+
+def test_chinese_readme_has_current_chatgpt_instructions():
+    from conftest import ROOT
+    txt = (ROOT / "platforms" / "chatgpt-project" / "PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8").strip()
+    readme = (ROOT / "README.zh.md").read_text(encoding="utf-8")
+    assert txt in readme

@@ -70,8 +70,8 @@ def build_skill_zip():
 def build_chatgpt_zip():
     out = DIST / "chatgpt-project-files.zip"
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
-        zf.write(CHATGPT / "PROJECT_INSTRUCTIONS.md",
-                 "chatgpt-project-files/PROJECT_INSTRUCTIONS.md")
+        zf.write(CHATGPT / "PROJECT_INSTRUCTIONS.txt",
+                 "chatgpt-project-files/PROJECT_INSTRUCTIONS.txt")
         for path in CHATGPT_FILES:
             zf.write(path, f"chatgpt-project-files/project-files/{path.name}")
         zf.writestr("chatgpt-project-files/project-files/profile_templates.md",

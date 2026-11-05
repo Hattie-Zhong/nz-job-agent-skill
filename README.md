@@ -38,16 +38,21 @@ Download the upload packages from the
    (called **Create and edit files** in newer layouts).
 2. Customize > Skills > **+** > **Create skill** > **Upload a skill**:
    upload `nz-job-application.zip`.
-3. Start a new chat and say: `Help me apply for a job in New Zealand`.
-4. First time: reply `new` and answer the setup questions. At the end, download
-   `my-job-search.zip` and keep it. Next time, upload it at the start of the chat.
+3. Start a new chat, upload anything about yourself (CV, old cover letters,
+   visa, certificates, a zip of everything) or just describe yourself, then
+   paste a job advert. Copying the advert text (Ctrl+A, Ctrl+C on the job page)
+   works best; links also work, but sites such as SEEK sometimes block AI tools.
+4. At the end you can download `my-job-search.zip`. Next time, uploading just
+   that file is enough, but uploading your files again also works.
 
 ### B. ChatGPT Project (beta)
 1. Unzip `chatgpt-project-files.zip`.
 2. Create a new Project in ChatGPT.
-3. Paste the text of `PROJECT_INSTRUCTIONS.md` into the Project's instructions.
-4. Add every file in the `project-files` folder to the Project's files.
-5. Start a chat inside the Project and say: `Help me apply for a job in New Zealand`.
+3. Project settings: paste the text of `PROJECT_INSTRUCTIONS.txt` into the
+   instructions box. Set memory to project-only and turn off file library access.
+4. Sources: add every file in the `project-files` folder.
+5. Start a chat inside the Project, upload anything about yourself, then paste
+   a job advert or link.
 
 This route has not been fully tested yet. Please report what works and what does not.
 
@@ -61,8 +66,9 @@ python skills/nz-job-application/scripts/init_workspace.py
 ```
 
 This creates `my-job-search/`, your private workspace. It is in `.gitignore`
-and never leaves your computer. Then open your agent in this folder and say
-`Set up my job profile`, then `Apply for this job: <link>`.
+and never leaves your computer. Put any of your files (CV, old letters,
+certificates) in `my-job-search/inbox/`, open your agent in this folder, say
+`help me apply for jobs`, then paste a job advert or link.
 Claude Code reads `CLAUDE.md`, Codex reads `AGENTS.md`, Gemini CLI reads
 `GEMINI.md`; all three point to the skill.
 

@@ -1,6 +1,6 @@
 ---
 name: nz-job-application
-description: Research one New Zealand job or internship at a time and write a targeted CV and cover letter using only facts from the user's own profile files. Use when the user wants to set up their job-search profile, apply for a job (gives a job link or pastes an advert), update their profile, or record an application outcome.
+description: Research one New Zealand job or internship at a time and write a targeted CV and cover letter using only facts from the user's own materials. Use when the user asks for help applying for jobs, uploads a CV or other personal documents for a job search, pastes a job advert or job link, or reports an application outcome.
 ---
 
 # NZ Job Application Agent
@@ -9,8 +9,12 @@ This skill helps a job seeker in New Zealand apply for one job at a time:
 eligibility check, company research, an honest 100-point match score, then a
 targeted CV and cover letter, a recruiter-style review, and a clean .docx export.
 
-It never invents experience. Every claim about the user must come from their
-own profile files or from what they say in the conversation.
+It never invents experience. Every claim about the user must come from what
+the user uploaded or told you.
+
+**Make it effortless.** Users are not technical. Never ask them to type
+commands, name files a certain way, or use a special format. Accept whatever
+they give you and work out what it is.
 
 ## Where things live
 
@@ -20,79 +24,89 @@ own profile files or from what they say in the conversation.
 
 ```
 my-job-search/
-  config.yaml            # name, contact details, limits (private)
-  profile/               # the only source of truth about the user
-    cv_master.md
-    eligibility.md
-    verified_facts.md
-    writing_rules.md
-    links.md
-    projects/<project>.md
-    CHANGELOG.md
-  inbox/                 # user's original files (old CVs, letters). Read only.
+  config.yaml            # name, contact details, limits
+  profile/               # the facts about the user, built from their materials
+    cv_master.md  eligibility.md  verified_facts.md  writing_rules.md
+    links.md  projects/<project>.md  CHANGELOG.md
+  inbox/                 # the user's own files, as uploaded. Read only.
   applications/
     tracker.csv
     <YYYY-MM-DD>-<company>-<role>/
 ```
 
-If `my-job-search/config.yaml` does not exist, first check whether you are in
-**web chat mode** (below). Otherwise the user has not set up yet: run
-`python <skill>/scripts/init_workspace.py` and follow `references/setup.md`.
+`examples/alex-chen/` in the repository is a fictional sample. Never read it
+as the user's profile.
 
-The folder `examples/alex-chen/` in the repository is a fictional sample.
-Never read it as the user's profile.
+## Starting a conversation
 
-## Web chat mode (Claude.ai, ChatGPT, Gemini in the browser)
+If the user has not given you anything yet, send this one short message in
+their language, and nothing else:
 
-You are in web chat mode when files do not survive between conversations
-(for example Claude.ai, the ChatGPT or Gemini web app). In this mode:
+> Upload anything about yourself: CV, old cover letters, visa, certificates,
+> a zip of everything, or the file I gave you last time. If you'd rather not
+> upload something, just tell me in words. Then paste the job advert or link.
 
-1. **Start of every conversation.** Before anything else, ask:
-   "Please upload your my-job-search.zip. If this is your first time, reply 'new'."
-   - Zip uploaded: `python <skill>/scripts/workspace_zip.py unpack <zip>`.
-   - "new": `python <skill>/scripts/init_workspace.py`, then `references/setup.md`.
-     If the templates folder is not available (for example in a ChatGPT
-     Project), create the workspace files from `profile_templates.md` instead.
-2. **Never rely on memory of an earlier conversation.** Only the unpacked files count.
-3. **End of setup, end of every application stage, and whenever a profile
-   fact changes:** run `python <skill>/scripts/workspace_zip.py pack` and give
-   the user `my-job-search.zip` to download, with this line:
-   "Save this file and replace your old one. Upload it next time."
-4. Give exported CV and cover letter .docx files to the user as separate downloads too.
-5. If Python cannot run at all, keep the same workflow, write the CV and letter
-   as plain text the user can paste into Word, and keep a running copy of every
-   changed profile file in the chat for the user to save.
+## When the user uploads anything
 
-## What the user can ask for
+Run, with every uploaded file path:
+
+```
+python <skill>/scripts/load_upload.py <file> [<file> ...]
+```
+
+It accepts any files or zips, restores a saved workspace if one is inside, and
+copies everything else into `inbox/`. Then:
+
+- **RESTORED:** the user's profile is back. Do not ask setup questions again.
+- **NEW or UPDATED:** read every file listed under INBOX FILES and build or
+  update the profile by following `references/setup.md`. Do this silently;
+  only ask about facts that are still missing and needed.
+
+Files you cannot read (for example scanned images when you cannot view them):
+tell the user in one line and ask them to paste the text or tell you the facts.
+
+### Identity documents
+For a passport, visa label, visa approval letter, driver licence or national ID:
+- record only what an application needs: citizenship, visa type, expiry date,
+  work conditions, licence class
+- **never** record document numbers, dates of birth, addresses or photos
+- then delete that file from `inbox/` so it is never packed or kept
+
+## When the user pastes a job advert or a job link
+
+Anything that looks like a job advert (pasted text, a screenshot, a file) or a
+link to a job page **is** the request to apply. Do not wait for words like
+"apply". Follow `references/workflow.md` from Step 1.
+
+If no profile exists yet and nothing was uploaded, ask once for their CV (or a
+few lines about their study, work and visa), then continue.
+
+## Other things the user may say
 
 | User says | Do this |
 |---|---|
-| "set up", "start", first use | `references/setup.md` |
-| a job URL, a pasted advert, "apply for ..." | `references/workflow.md` |
-| "update my profile", a new CV, project, grade or visa change | "Updating the profile" below |
-| "I submitted", "rejected", "got an interview", "skip it" | update the tracker (see below) |
+| "I submitted", "rejected", "got an interview", "skip it" | update the tracker (below) |
 | "status", "what have I applied for" | `python <skill>/scripts/tracker.py list` |
-| "start again", "reset", "clear the example" | `python <skill>/scripts/init_workspace.py --reset` (moves the old workspace to a backup folder; never deletes it) |
-
-Read the reference file for a task before starting it. Do not load all
-reference files at once.
+| a new fact, correction, or new file | update the profile ("Updating the profile") |
+| "start again", "clear everything" | `python <skill>/scripts/init_workspace.py --reset` (moves the old workspace to a backup folder; never deletes it) |
 
 ## Core rules (apply to every task)
 
 ### Evidence
-1. `profile/` is the only authoritative source about the user, together with
-   what the user states directly in the current conversation.
+1. The user's materials, `profile/`, and what the user says in the conversation
+   are the only sources about the user.
 2. Never invent or exaggerate experience, duties, skills, results, grades,
    qualifications, work rights, or employment or client relationships.
 3. Never infer an employment or client relationship from a project or repo name.
 4. For group projects, only claim the parts recorded as the user's own work.
+   If a file does not say which part was theirs, ask once.
 5. Never describe planned or unfinished work as completed.
 
 ### Facts
 1. **Write back.** Any fact the user states, confirms or corrects is written
    into the right file in `profile/` immediately (or `verified_facts.md` if
    nothing fits), and logged in `profile/CHANGELOG.md`.
-2. **Never ask twice.** Search `profile/` before asking anything.
+2. **Never ask twice.** Search `profile/` and `inbox/` before asking anything.
 3. **No fact questions during an application.** If a claim is not supported,
    use the safer supported wording or leave it out, and list the change in the
    next summary. Missing hard requirements go under "Biggest gaps" at Checkpoint 1.
@@ -104,15 +118,16 @@ even if the score is high and even in auto-approve mode. Writing "wait for
 the user" into a file is not stopping.
 
 ### Files
-- Never modify or delete anything in `inbox/`.
+- Never modify anything in `inbox/` (except deleting identity documents as above).
 - Never overwrite `profile/cv_master.md` during an application.
 - Do not edit application folders whose status is Applied, Interview, Offer,
   Rejected, Skipped, Low score or Not eligible (renaming them is allowed).
 
 ### Privacy
-- Never store passport, visa, IRD or bank account numbers, or passwords.
-- Collect only public professional information about people. Never collect
-  private contact details.
+- Never store passport, visa, IRD, driver licence or bank account numbers,
+  dates of birth, or passwords.
+- Collect only public professional information about other people. Never
+  collect private contact details.
 - Never copy anything from the workspace into `<skill>` or into a public repo.
 
 ### Language
@@ -143,15 +158,30 @@ python <skill>/scripts/tracker.py list
 Statuses: In progress, Paused, Ready to submit, Applied, Interview, Offer,
 Rejected, Skipped, Low score, Not eligible.
 
-## Platform notes
+## Web chat mode (Claude.ai, ChatGPT, Gemini in the browser)
 
-This skill works in any agent that can read files and run Python
-(Claude Code, Codex CLI, Gemini CLI and others).
+You are in web chat mode when files do not survive between conversations.
+Then also:
+
+1. Never rely on memory of an earlier conversation. Only uploaded files and
+   this conversation count.
+2. After the profile is first built, at the end of each application, and
+   whenever a profile fact changes, run
+   `python <skill>/scripts/workspace_zip.py pack` and offer `my-job-search.zip`
+   for download with this line (in the user's language):
+   "Optional: save this file. Next time you can upload just this one file
+   instead of everything again."
+3. Give the exported CV and cover letter .docx files as separate downloads.
+4. If the templates folder is not available (for example in a ChatGPT
+   Project), create the workspace files from `profile_templates.md`.
+5. If Python cannot run at all, keep the same workflow, write the CV and letter
+   as plain text the user can paste into Word, and keep any changed profile
+   facts in the chat.
+
+## Platform notes
 
 - **No web access:** ask the user to paste the advert and any company pages.
   Never guess page content.
 - **No subagents:** run the recruiter review in `references/reviewer.md` as a
   separate pass that reads only the three files it lists, ignoring everything
   else you know.
-- **Cannot run Python:** write the Markdown files, then tell the user that the
-  export and checks need Python on their own computer.
