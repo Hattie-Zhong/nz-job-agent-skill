@@ -56,8 +56,11 @@ END YOUR TURN.
 - Recent signals (last 12 months if possible), each with its relevance to this role.
 - Source priority: official site, annual report, newsroom, official social
   media, parent company, reputable NZ media.
-- Every fact needs a source URL, date and confidence. Aim for 8 to 12 good
-  sources; stop when more would not change the strategy.
+- Every fact needs a source URL, date and confidence.
+- Keep research short: **at most 6 sources and about 10 searches or page
+  reads in total.** Start with the company's own site and newsroom. Stop as
+  soon as you have one confirmed recent signal for the letter and enough to
+  judge the role; more would not change the strategy.
 
 ## Step 4: Role intelligence
 

@@ -5,6 +5,7 @@ Usage (from the repository root):
 
 It checks every file git tracks or would add (ignored files are skipped) for:
 - your own name, email, phone and private_terms from <workspace>/config.yaml
+  (strings listed in allowed_terms, such as your GitHub username, are skipped)
 - any email address not at example.com / example.org
 - NZ-style phone numbers
 - numbers written like IRD numbers (three digit groups joined by hyphens)
@@ -42,9 +43,10 @@ def git_files():
 
 
 def personal_terms(workspace):
+    """Return (terms that must not appear, allowed strings that may contain them)."""
     path = Path(workspace) / "config.yaml"
     if not path.exists():
-        return []
+        return [], []
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     candidate = data.get("candidate") or {}
     terms = []
@@ -54,8 +56,10 @@ def personal_terms(workspace):
     for key in ("email", "phone", "linkedin"):
         if candidate.get(key):
             terms.append(str(candidate[key]))
-    terms += [str(t) for t in (data.get("privacy") or {}).get("private_terms") or [] if t]
-    return terms
+    privacy = data.get("privacy") or {}
+    terms += [str(t) for t in privacy.get("private_terms") or [] if t]
+    allowed = [str(t) for t in privacy.get("allowed_terms") or [] if t]
+    return terms, allowed
 
 
 def main():
@@ -68,16 +72,16 @@ def main():
     except (subprocess.CalledProcessError, FileNotFoundError):
         sys.exit("Run this inside a git repository (git must be installed).")
 
-    terms = personal_terms(args.workspace)
+    terms, allowed = personal_terms(args.workspace)
     workspace_name = Path(args.workspace).name
     findings = []
 
     for path in files:
-        if path.parts and path.parts[0] == workspace_name:
+        if path.parts and path.parts[0].startswith(workspace_name):
             findings.append((path, 0, "Workspace file is not ignored", str(path)))
             continue
         if path.suffix.lower() not in TEXT_SUFFIXES or not path.exists():
-            if path.suffix.lower() in {".docx", ".pdf", ".xlsx", ".pptx"}:
+            if path.suffix.lower() in {".docx", ".pdf", ".xlsx", ".pptx", ".zip"}:
                 findings.append((path, 0, "Document file would be published", path.name))
             continue
         try:
@@ -92,6 +96,8 @@ def main():
                 for match in pattern.finditer(line):
                     findings.append((path, number, label, match.group(0)))
             lower = line.lower()
+            for ok in allowed:
+                lower = lower.replace(ok.lower(), " ")
             for term in terms:
                 if term.lower() in lower:
                     findings.append((path, number, "Personal term from config.yaml", term))

@@ -1,5 +1,7 @@
 # Personal job-search data: never upload
 my-job-search/
+my-job-search-backup-*/
+my-job-search.zip
 /applications/
 /00_MY_PROFILE/
 /01_INBOX/
@@ -11,6 +13,9 @@ my-job-search/
 # Generated documents
 *.docx
 *.pdf
+
+# Release builds
+dist/
 
 # Python
 __pycache__/

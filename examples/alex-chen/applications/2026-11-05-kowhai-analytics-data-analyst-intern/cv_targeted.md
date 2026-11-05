@@ -3,7 +3,7 @@ alex.chen@example.com | Christchurch, New Zealand
 Student visa: full-time in summer holidays, up to 25 hours per week during study
 
 ## Profile
-Master of Data Science student with a background in banking customer service. I clean messy data in Python and SQL and explain results in plain language.
+Master of Data Science student with a background in banking customer service. Cleans messy data in Python and SQL and explains results in plain language.
 
 ## Education
 ### Master of Data Science, fictional university, Christchurch (2026 to February 2028)
@@ -17,7 +17,7 @@ Master of Data Science student with a background in banking customer service. I 
 ### Customer Service Officer, Fictional Bank, Kuala Lumpur (March 2022 to January 2026)
 - Resolved customer account and card queries by phone and in branch
 - Reviewed daily transaction exception reports and escalated unusual activity
-- Built an **Excel tracker** that the team used to follow up open complaints
+- Built an Excel tracker that the team used to follow up open complaints
 
 ## Skills
 - Python (pandas), SQL, Excel

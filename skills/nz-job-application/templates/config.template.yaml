@@ -21,3 +21,6 @@ privacy:
   # Words that must never appear in anything you publish, e.g. your surname,
   # past employers, your school. Used by scripts/privacy_scan.py.
   private_terms: []
+  # Strings that may be published even though they contain a private term,
+  # e.g. your GitHub username in repository links.
+  allowed_terms: []

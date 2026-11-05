@@ -35,8 +35,33 @@ my-job-search/
     <YYYY-MM-DD>-<company>-<role>/
 ```
 
-If `my-job-search/config.yaml` does not exist, the user has not set up yet:
-run `python <skill>/scripts/init_workspace.py` and follow `references/setup.md`.
+If `my-job-search/config.yaml` does not exist, first check whether you are in
+**web chat mode** (below). Otherwise the user has not set up yet: run
+`python <skill>/scripts/init_workspace.py` and follow `references/setup.md`.
+
+The folder `examples/alex-chen/` in the repository is a fictional sample.
+Never read it as the user's profile.
+
+## Web chat mode (Claude.ai, ChatGPT, Gemini in the browser)
+
+You are in web chat mode when files do not survive between conversations
+(for example Claude.ai, the ChatGPT or Gemini web app). In this mode:
+
+1. **Start of every conversation.** Before anything else, ask:
+   "Please upload your my-job-search.zip. If this is your first time, reply 'new'."
+   - Zip uploaded: `python <skill>/scripts/workspace_zip.py unpack <zip>`.
+   - "new": `python <skill>/scripts/init_workspace.py`, then `references/setup.md`.
+     If the templates folder is not available (for example in a ChatGPT
+     Project), create the workspace files from `profile_templates.md` instead.
+2. **Never rely on memory of an earlier conversation.** Only the unpacked files count.
+3. **End of setup, end of every application stage, and whenever a profile
+   fact changes:** run `python <skill>/scripts/workspace_zip.py pack` and give
+   the user `my-job-search.zip` to download, with this line:
+   "Save this file and replace your old one. Upload it next time."
+4. Give exported CV and cover letter .docx files to the user as separate downloads too.
+5. If Python cannot run at all, keep the same workflow, write the CV and letter
+   as plain text the user can paste into Word, and keep a running copy of every
+   changed profile file in the chat for the user to save.
 
 ## What the user can ask for
 
@@ -47,6 +72,7 @@ run `python <skill>/scripts/init_workspace.py` and follow `references/setup.md`.
 | "update my profile", a new CV, project, grade or visa change | "Updating the profile" below |
 | "I submitted", "rejected", "got an interview", "skip it" | update the tracker (see below) |
 | "status", "what have I applied for" | `python <skill>/scripts/tracker.py list` |
+| "start again", "reset", "clear the example" | `python <skill>/scripts/init_workspace.py --reset` (moves the old workspace to a backup folder; never deletes it) |
 
 Read the reference file for a task before starting it. Do not load all
 reference files at once.

@@ -23,6 +23,10 @@ these and wins if they conflict. Limits (pages, words) come from `config.yaml`.
 - No photo.
 - Start each bullet with a strong past-tense verb (present tense for the current role).
 - One idea per bullet. Numbers only if they are recorded in the profile.
+- No bold or italic inside bullets or the summary. Bold is only for job titles,
+  qualification names and project names on their heading lines.
+- Write the CV summary without "I", "my" or "me" (for example "Master of Data
+  Science student with ...", not "I am a student ..."). The cover letter uses "I" as normal.
 - Each fact appears once only across the whole CV.
 
 ## Cover letter

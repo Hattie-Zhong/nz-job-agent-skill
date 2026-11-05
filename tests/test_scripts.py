@@ -102,3 +102,53 @@ def test_privacy_scan_clean_repo(tmp_path):
     (repo / "README.md").write_text("Contact: someone@example.com\n", encoding="utf-8")
     result = run_script("privacy_scan.py", cwd=repo)
     assert result.returncode == 0, result.stdout
+
+
+def test_reset_moves_workspace_to_backup(workspace):
+    result = run_script("init_workspace.py", "--workspace", workspace, "--reset")
+    assert result.returncode == 0, result.stderr
+    backups = list(workspace.parent.glob("my-job-search-backup-*"))
+    assert len(backups) == 1
+    assert (backups[0] / "profile" / "projects" / "sales-forecasting.md").exists()
+    import yaml
+    config = yaml.safe_load((workspace / "config.yaml").read_text(encoding="utf-8"))
+    assert config["candidate"]["full_name"] == ""
+    assert not (workspace / "profile" / "projects" / "sales-forecasting.md").exists()
+
+
+def test_workspace_zip_round_trip(workspace, tmp_path):
+    out = tmp_path / "my-job-search.zip"
+    packed = run_script("workspace_zip.py", "pack", "--workspace", workspace, "--out", out)
+    assert packed.returncode == 0, packed.stderr
+    restored = tmp_path / "restored"
+    unpacked = run_script("workspace_zip.py", "unpack", out, "--workspace", restored)
+    assert unpacked.returncode == 0, unpacked.stderr
+    assert (restored / "config.yaml").exists()
+    assert (restored / "applications" / "tracker.csv").exists()
+    again = run_script("workspace_zip.py", "unpack", out, "--workspace", restored)
+    assert again.returncode != 0
+
+
+def test_build_release(tmp_path):
+    import shutil
+    import subprocess
+    import sys
+    import zipfile
+    from conftest import ROOT
+    repo = tmp_path / "repo"
+    shutil.copytree(ROOT, repo, ignore=shutil.ignore_patterns(
+        ".git", "dist", "my-job-search*", "__pycache__", ".pytest_cache"))
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    result = subprocess.run([sys.executable, "tools/build_release.py"], cwd=repo,
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+    with zipfile.ZipFile(repo / "dist" / "nz-job-application.zip") as zf:
+        names = zf.namelist()
+    assert "nz-job-application/SKILL.md" in names
+    assert "nz-job-application/templates/config.template.yaml" in names
+    assert not any("__pycache__" in n for n in names)
+    with zipfile.ZipFile(repo / "dist" / "chatgpt-project-files.zip") as zf:
+        names = zf.namelist()
+    assert "chatgpt-project-files/PROJECT_INSTRUCTIONS.md" in names
+    assert "chatgpt-project-files/project-files/profile_templates.md" in names
+    assert "chatgpt-project-files/project-files/workflow.md" in names
