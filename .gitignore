@@ -1,0 +1,23 @@
+# Personal job-search data: never upload
+my-job-search/
+/applications/
+/00_MY_PROFILE/
+/01_INBOX/
+/02_REPOS/
+/03_GENERAL_CV/
+/config.yaml
+.env
+
+# Generated documents
+*.docx
+*.pdf
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# IDE settings
+.idea/

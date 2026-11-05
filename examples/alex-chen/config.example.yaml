@@ -1,0 +1,19 @@
+candidate:
+  full_name: "Alex Chen"
+  file_name: "Alex_Chen"
+  email: "alex.chen@example.com"
+  phone: ""
+  location: "Christchurch, New Zealand"
+  linkedin: ""
+  github: ""
+
+limits:
+  cv_max_pages: 2
+  cover_letter_max_pages: 1
+  cover_letter_max_words: 450
+
+style:
+  no_dashes_in_cover_letter: true
+
+privacy:
+  private_terms: []

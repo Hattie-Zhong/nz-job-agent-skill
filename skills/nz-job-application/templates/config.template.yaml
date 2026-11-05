@@ -1,0 +1,23 @@
+# Your personal settings. This file stays on your computer and is never uploaded.
+
+candidate:
+  full_name: ""          # as it should appear at the top of your CV, e.g. "Alex Chen"
+  file_name: ""          # used in exported file names, e.g. "Alex_Chen"
+  email: ""
+  phone: ""
+  location: ""           # e.g. "Christchurch, New Zealand"
+  linkedin: ""
+  github: ""
+
+limits:
+  cv_max_pages: 2
+  cover_letter_max_pages: 1
+  cover_letter_max_words: 450
+
+style:
+  no_dashes_in_cover_letter: true
+
+privacy:
+  # Words that must never appear in anything you publish, e.g. your surname,
+  # past employers, your school. Used by scripts/privacy_scan.py.
+  private_terms: []
